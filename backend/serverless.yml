@@ -13,8 +13,10 @@ provider:
   lambdaHashingVersion: '20201221'
   profile: serverless
 
-  stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'us-east-1'}
+  # https://www.serverless.com/framework/docs/deprecations/#PARAMETERIZED_ARGUMENT
+  # You may override values in serverless.yml for stage and region with command line arguments --stage and --region
+  stage: 'dev'
+  region: 'us-east-1'
 
   tracing:
     lambda: true
@@ -32,14 +34,18 @@ provider:
     # Enable API Gateway logs
     restApi: true
 
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - xray:PutTelemetryRecords
-            - xray:PutTraceSegments
-          Resource: "*"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "*"
 
 
 functions:
@@ -113,11 +119,32 @@ resources:
         RestApiId:
           Ref: 'ApiGatewayRestApi'
     
-#     # TODO: Create a DynamoDB table with local secondary index and a composite key
-#     TodosTable:
-#       Type: AWS::DynamoDB::Table
-#       Properties:
-
+    TodosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: todoId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: todoId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TODOS_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL # What attributes will be copied to an index
 #     # TODO: Complete the bucket properties below. 
 #     # Do not forget to add the CorsConfiguration propoerty
 #     AttachmentsBucket:
