@@ -63,3 +63,14 @@ export const updateTodo = async (
 
   logger.info(`Updated TODO ${todoId} for user ${userId}`, updatedTodoRequest);
 };
+
+export const deleteTodo = async (
+  todoId: string,
+  userId: string
+): Promise<void> => {
+  logger.info(`Deleting TODO ${todoId} for user ${userId}`);
+
+  await TodosAccess.delete(todoId, userId);
+
+  logger.info(`Deleted TODO ${todoId} for user ${userId}`);
+};

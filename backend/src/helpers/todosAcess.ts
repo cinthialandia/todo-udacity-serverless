@@ -50,7 +50,24 @@ const update = async (
     .promise();
   logger.info(`update item ${todoId} for user ${userId} success`, todoUpdate);
 };
+
+const remove = async (todoId: string, userId: string): Promise<void> => {
+  logger.info(`delete item ${todoId} for user ${userId}`);
+
+  await docClient
+    .delete({
+      TableName: todosTable,
+      Key: {
+        userId,
+        todoId,
+      },
+    })
+    .promise();
+  logger.info(`delete item ${todoId} for user ${userId} success`);
+};
+
 export const TodosAccess = {
   put,
   update,
+  delete: remove,
 };
