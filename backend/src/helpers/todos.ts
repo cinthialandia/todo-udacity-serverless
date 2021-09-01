@@ -1,11 +1,11 @@
 import * as AWS from "aws-sdk";
-// import * as uuid from "uuid";
+import * as uuid from "uuid";
 // import * as createError from "http-errors";
 
-// import { TodosAccess } from './todosAcess'
+import { TodosAccess } from "./todosAcess";
 // import { AttachmentUtils } from './attachmentUtils';
 import { TodoItem } from "../models/TodoItem";
-// import { CreateTodoRequest } from "../requests/CreateTodoRequest";
+import { CreateTodoRequest } from "../requests/CreateTodoRequest";
 // import { UpdateTodoRequest } from "../requests/UpdateTodoRequest";
 import { createLogger } from "../utils/logger";
 
@@ -30,4 +30,24 @@ export const getTodosForUser = async (userId: string): Promise<TodoItem[]> => {
   logger.info(`Got TODOs for user ${userId}`, result);
 
   return result.Items as TodoItem[];
+};
+
+export const createTodo = async (
+  userId: string,
+  newTodoRquest: CreateTodoRequest
+): Promise<TodoItem> => {
+  logger.info(`Creating a TODO for user ${userId}`);
+  const newTodo: TodoItem = {
+    name: newTodoRquest.name,
+    dueDate: new Date(newTodoRquest.dueDate).toISOString(),
+    userId,
+    todoId: uuid(),
+    done: false,
+    createdAt: new Date().toISOString(),
+  };
+  const result = await TodosAccess.put(newTodo);
+
+  logger.info(`Created a TODO for user ${userId}`, result);
+
+  return result;
 };
