@@ -2,7 +2,7 @@ import * as uuid from "uuid";
 // import * as createError from "http-errors";
 
 import { TodosAccess } from "./todosAcess";
-// import { AttachmentUtils } from './attachmentUtils';
+import { AttachmentUtils } from "./attachmentUtils";
 import { TodoItem } from "../models/TodoItem";
 import { CreateTodoRequest } from "../requests/CreateTodoRequest";
 import { UpdateTodoRequest } from "../requests/UpdateTodoRequest";
@@ -61,4 +61,31 @@ export const deleteTodo = async (
   await TodosAccess.delete(todoId, userId);
 
   logger.info(`Deleted TODO ${todoId} for user ${userId}`);
+};
+
+export const createAttachmentPresignedUrl = async (
+  todoId: string,
+  userId: string
+): Promise<string> => {
+  logger.info(
+    `Creating attachment presigned URL for TODO ${todoId} and user ${userId}`
+  );
+
+  const presignedUrl = await AttachmentUtils.getAttachmentPresignedUrl(
+    todoId,
+    userId
+  );
+
+  logger.info(
+    `Created attachment presigned URL for TODO ${todoId} and user ${userId}`,
+    presignedUrl
+  );
+
+  logger.info(`Storing attachment URL for TODO ${todoId} and user ${userId}`);
+
+  await TodosAccess.setAttachmentUrl(todoId, userId);
+
+  logger.info(`Stored attachment URL for TODO ${todoId} and user ${userId}`);
+
+  return presignedUrl;
 };
