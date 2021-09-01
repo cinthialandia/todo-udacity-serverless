@@ -39,12 +39,6 @@ provider:
       Action:
         - xray:PutTelemetryRecords
         - xray:PutTraceSegments
-        - dynamodb:DescribeTable
-        - dynamodb:Query
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
       Resource: "*"
 
 
@@ -61,6 +55,13 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DescribeTable
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
@@ -73,18 +74,32 @@ functions:
           request:
             schema:
               application/json: ${file(models/create-todo-model.json)}
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DescribeTable
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
     events:
       - http:
-          method: put
+          method: patch
           path: todos/{todoId}
           cors: true
           authorizer: Auth
           request:
             schema:
               application/json: ${file(models/update-todo-model.json)}
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DescribeTable
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
@@ -94,6 +109,13 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DescribeTable
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}          
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements
