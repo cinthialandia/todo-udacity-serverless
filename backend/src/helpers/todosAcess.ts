@@ -2,7 +2,7 @@ import * as AWS from "aws-sdk";
 // import * as AWSXRay from "aws-xray-sdk";
 import { createLogger } from "../utils/logger";
 import { TodoItem } from "../models/TodoItem";
-// import { TodoUpdate } from "../models/TodoUpdate";
+import { TodoUpdate } from "../models/TodoUpdate";
 
 // const XAWS = AWSXRay.captureAWS(AWS);
 
@@ -24,6 +24,33 @@ const put = async (todoItem: TodoItem): Promise<TodoItem> => {
   return todoItem;
 };
 
+const update = async (
+  todoId: string,
+  userId: string,
+  todoUpdate: TodoUpdate
+): Promise<void> => {
+  logger.info(`update item ${todoId} for user ${userId}`, todoUpdate);
+  await docClient
+    .update({
+      TableName: todosTable,
+      Key: {
+        userId,
+        todoId,
+      },
+      UpdateExpression: "set #name = :name, dueDate = :dueDate, done = :done",
+      ExpressionAttributeNames: {
+        "#name": "name",
+      },
+      ExpressionAttributeValues: {
+        ":name": todoUpdate.name,
+        ":dueDate": todoUpdate.dueDate,
+        ":done": todoUpdate.done,
+      },
+    })
+    .promise();
+  logger.info(`update item ${todoId} for user ${userId} success`, todoUpdate);
+};
 export const TodosAccess = {
   put,
+  update,
 };

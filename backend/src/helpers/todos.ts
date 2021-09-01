@@ -6,7 +6,7 @@ import { TodosAccess } from "./todosAcess";
 // import { AttachmentUtils } from './attachmentUtils';
 import { TodoItem } from "../models/TodoItem";
 import { CreateTodoRequest } from "../requests/CreateTodoRequest";
-// import { UpdateTodoRequest } from "../requests/UpdateTodoRequest";
+import { UpdateTodoRequest } from "../requests/UpdateTodoRequest";
 import { createLogger } from "../utils/logger";
 
 const todosTable = process.env.TODOS_TABLE;
@@ -50,4 +50,16 @@ export const createTodo = async (
   logger.info(`Created a TODO for user ${userId}`, result);
 
   return result;
+};
+
+export const updateTodo = async (
+  todoId: string,
+  userId: string,
+  updatedTodoRequest: UpdateTodoRequest
+): Promise<void> => {
+  logger.info(`Updating TODO ${todoId} for user ${userId}`, updatedTodoRequest);
+
+  await TodosAccess.update(todoId, userId, updatedTodoRequest);
+
+  logger.info(`Updated TODO ${todoId} for user ${userId}`, updatedTodoRequest);
 };
